@@ -18,3 +18,12 @@ port = \<server port\>
 
 port = \<client port\>
 
+## Running on mininet
+1. Ensure you have the following files in your mininet VM
+    * rdt_udp_topo.py
+    * basic-udp-server.py
+    * basic-udp-client.py
+    * udp.conf
+2. Determine what the IP of h1 is (ex. 10.0.0.1) and set the server ip in udp.conf accordingly
+3. Run `sudo python3 rdt_udp_topo.py` from within the VM directory containing the files.
+4. The outputs of basic-udp-server.py and basic-udp-client.py will be in r.out and s.out respectively.
