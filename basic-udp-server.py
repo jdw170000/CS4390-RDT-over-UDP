@@ -15,6 +15,6 @@ sock.bind((server_ip, server_port))
 
 #read data and print to terminal
 while True:
-    print "Waiting for client message..."
+    print('Waiting for client message...')
     message_data, client_address = sock.recvfrom(1024)
-    print "Received message: {}; from client: {}".format(message_data, client_address)
+    print(f'Received message: {message_data}; from client: {client_address}')

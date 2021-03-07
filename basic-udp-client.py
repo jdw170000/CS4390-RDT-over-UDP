@@ -12,6 +12,6 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 #send packets to server
 for i in range(10):
-    message = "This is packet {} of 10".format(i+1)
-    print "Sending message: {}".format(message)
+    message = bytes(f'This is packet {i+1} of 10', 'utf-8')
+    print(f'Sending message: {message}')
     sock.sendto(message, (server_ip, server_port))
