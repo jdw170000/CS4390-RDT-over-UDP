@@ -14,6 +14,7 @@ server_port = int(config['server']['port'])
 
 
 window_size = 10 #later this will be part of the config file
+timeout_value = 2*5 #later this will be part of the config file
 
 PacketDescriptor = namedtuple('PacketDescriptor', 'message sequence_number')
 
@@ -72,5 +73,5 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 #bind socket to server-ip, server-port
 sock.bind((server_ip, server_port))
 
-server = GBN_Server(sock, window_size=window_size, server_timeout=1)
+server = GBN_Server(sock, window_size=window_size, server_timeout=timeout_value)
 server.start_server()

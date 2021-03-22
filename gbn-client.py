@@ -14,6 +14,9 @@ config.read('udp.conf')
 server_ip = config['server']['ip']
 server_port = int(config['server']['port'])
 
+timeout_value = 5 #later this will be part of the config file 
+window_size = 10 #later this will be part of the config file
+
 PacketDescriptor = namedtuple('PacketDescriptor', 'message sequence_number')
 
 class GBN_Client:
@@ -123,8 +126,6 @@ class GBN_Client:
             self.internal_lock.release()
 
 
-timeout_value = 5
-window_size = 10
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 server_address = (server_ip, server_port)
 
