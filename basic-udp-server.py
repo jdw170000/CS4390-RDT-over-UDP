@@ -1,25 +1,25 @@
 import configparser
 import socket
 
-#for testing purposes only
+# for testing purposes only
 import random
 
 import rdt_headers
 import send_packet
 
-#read the server's port number and ip address from the configuration file
+# read the server's port number and ip address from the configuration file
 config = configparser.ConfigParser()
 config.read('udp.conf')
 server_ip = config['server']['ip']
 server_port = int(config['server']['port'])
 
-#create UDP socket
+# create UDP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-#bind socket to server-ip, server-port
+# bind socket to server-ip, server-port
 sock.bind((server_ip, server_port))
 
-#read data and print to terminal
+# read data and print to terminal
 while True:
     print('Waiting for client message...')
     message_data, client_address = sock.recvfrom(1024)
@@ -28,12 +28,10 @@ while True:
 
     print(f'Received packet: {message_data}; from client: {client_address}')
     print(f'Checksum ({checksum}) is valid? {is_valid}. Sequence number = {sequence_number}. Message = "{message}"')
-    
-    if is_valid and random.randint(1,2) == 1: #for testing purposes, send NACK half the time
+
+    if is_valid and random.randint(1, 2) == 1:  # for testing purposes, send NACK half the time
         print(f'Sent ACK for sequence number {sequence_number}')
         send_packet.send_ack(sock, client_address, sequence_number)
     else:
         print(f'Sent NACK for sequence number {sequence_number}')
         send_packet.send_nack(sock, client_address, sequence_number)
-
-
