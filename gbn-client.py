@@ -78,6 +78,10 @@ class GBN_Client:
         if self.done:
             raise RuntimeError('Cannot send messages from client after done')
 
+        #if the next sequence number is not in the range of valid sequence numbers, we can't send the packet
+        if self.next_sequence_number not in [x % sequence_number_count for x in range(self.window_base, self.window_base + self.window_size)]:
+            return False
+        
         self.internal_lock.acquire()
 
         # send the message and add it to the list of unacked packets
