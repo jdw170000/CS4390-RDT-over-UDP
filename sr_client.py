@@ -2,11 +2,9 @@ import configparser
 import sys
 import socket
 import threading
-import queue
-from time import sleep
-from collections import namedtuple
 from recordclass import recordclass
 
+from record_definitions import *
 import rdt_headers
 import send_packet
 
@@ -19,7 +17,6 @@ server_port = int(config['server']['port'])
 timeout_value = 5  # later this will be part of the config file
 window_size = 10  # later this will be part of the config file
 
-PacketDescriptor = recordclass('PacketDescriptor', 'message sequence_number acked timer')
 
 class SR_Client:
     window_size = 10
@@ -31,27 +28,33 @@ class SR_Client:
     server_address = ('127.0.0.1', 8080)
     internal_lock = threading.Lock()
     timeout_delay = 5
+    corrupt_probability = 0
     done = False
 
+    statistics = None
     receiver = None
 
     def __init__(self, sock, server_address, timeout_delay=5, window_size=10, initial_sequence_number=0,
-                 sequence_number_count=None):
+                 sequence_number_count=None, corrupt_probability=0):
         self.sock = sock
         self.server_address = server_address
         self.window_size = window_size
         self.sequence_number_count = sequence_number_count if sequence_number_count is not None else window_size*2
         self.window_base = next_sequence_number = initial_sequence_number
         self.timeout_delay = timeout_delay
+        self.corrupt_probability = corrupt_probability
 
         self.internal_lock = threading.Lock()
         self.done = False
+
+        self.statistics = ClientStatistics(0,0,0,0,0,None) 
 
         self.receiver = threading.Thread(target=self.receiver_thread)
         self.receiver.start()
 
     def done_sending(self):
-        self.send_message_set(['DONE'])
+        while not self.send('DONE'):
+            time.sleep(0.5)
         self.done = True
 
     def start_packet_timer(self, packet):
@@ -65,6 +68,9 @@ class SR_Client:
             self.internal_lock.acquire()
 
             print(f'Retransmitting unacked packet {packet.sequence_number}')
+            self.statistics.numRetransmits += 1
+            self.statistics.numTOevents += 1
+            
             #retransmit the packet and reset the timer
             send_packet.send_message(self.sock, self.server_address, packet.sequence_number, packet.message)
             self.start_packet_timer(packet)
@@ -86,10 +92,17 @@ class SR_Client:
         self.internal_lock.acquire()
 
         # send the message and add it to the list of undelivered packets
-        packet = PacketDescriptor(message, self.next_sequence_number, False, None)
+        packet = SR_PacketDescriptor(message, self.next_sequence_number, False, None)
         packet.timer = threading.Timer(self.timeout_delay, self.retransmit_packet(packet));
+        
         print(f'Sending packet: ({packet.message}, {packet.sequence_number})')
-        send_packet.send_message(self.sock, self.server_address, packet.sequence_number, packet.message, corrupt_prob=0.3)
+        self.statistics.numTransmits += 1
+        self.statistics.numBytes += len(message) #only count the payload bytes in the bytes sent
+        
+        corrupted = send_packet.send_message(self.sock, self.server_address, packet.sequence_number, packet.message, corrupt_prob=self.corrupt_probability)
+        if corrupted:
+            self.statistics.numCorrupts += 1
+
         self.undelivered_list.append(packet)
         self.start_packet_timer(packet);
 
@@ -100,12 +113,6 @@ class SR_Client:
 
         return True
 
-    #try to send all the messages; if you can't send a message, wait 1 second and try again
-    def send_message_set(self, message_set):
-        for m in message_set:
-            print(f'Attempting to send {m}')
-            while not self.send(m):
-                sleep(1)
 
     def mark_as_acked(self, packet):
         packet.acked = True
@@ -121,7 +128,7 @@ class SR_Client:
         # repeat until we have received ack for all messages and the client is done sending messages
         while self.undelivered_list or not self.done:
             # receive message from server and parse it
-            message_data, server_address = sock.recvfrom(1024)
+            message_data, server_address = self.sock.recvfrom(1024)
             checksum, sequence_number, message = rdt_headers.parse_rdt_packet(message_data)
             # validate the checksum
             is_valid = rdt_headers.is_valid_checksum(checksum, sequence_number, message)
@@ -139,18 +146,3 @@ class SR_Client:
                     print(f'Received ACK({sequence_number}), but that packet was not found in the undelivered list')
             
             self.internal_lock.release()
-
-
-sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-server_address = (server_ip, server_port)
-
-client = SR_Client(sock, server_address, timeout_value, window_size)
-
-
-def message_generator(n=10):
-    for i in range(n):
-        yield f'This is packet {i} of {n}'
-
-
-client.send_message_set(message_generator(n=10))
-client.done_sending()

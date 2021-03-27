@@ -1,23 +1,9 @@
-import configparser
 import socket
 import threading
-import bisect
-from collections import namedtuple
 
+from record_definitions import *
 import rdt_headers
 import send_packet
-
-# read the server's port number and ip address from the configuration file
-config = configparser.ConfigParser()
-config.read('udp.conf')
-server_ip = config['server']['ip']
-server_port = int(config['server']['port'])
-
-window_size = 10  # later this will be part of the config file
-timeout_value = 2 * 5  # later this will be part of the config file
-
-PacketDescriptor = namedtuple('PacketDescriptor', 'message sequence_number')
-
 
 class SR_Server:
     sock = 0
@@ -26,6 +12,9 @@ class SR_Server:
     sequence_number_count = 20
     server_timeout = 10
 
+    server = None
+
+    statistics = None
     delivery_buffer = []
 
     def __init__(self, sock, server_timeout=10, window_size=10, initial_sequence_number=0, sequence_number_count=None):
@@ -36,21 +25,33 @@ class SR_Server:
         self.sequence_number_count = sequence_number_count if sequence_number_count is not None else window_size*2
 
         self.done = False
+        
+        self.statistics = ServerStatistics(0,0,'N/A')
 
-    def start_server(self):
-        server = threading.Thread(target=self.receiver_thread)
-        server.start()
+        self.server = threading.Thread(target=self.receiver_thread)
+        self.server.start()
 
     #do some processing on the packet
     def deliver(self, packet):
         self.window_base = (self.window_base + 1) % self.sequence_number_count
         print(f'Delivered packet {packet.sequence_number}')
+        self.statistics.numBytes += len(packet.message)
+        
 
     #deliver all in order packets received
     def attempt_to_deliver_packets(self):
         print(f'Attempting to deliver packets: window base = {self.window_base}, delivery_buffer = {str([p.sequence_number for p in self.delivery_buffer])}')
         while self.delivery_buffer and self.delivery_buffer[0].sequence_number == self.window_base:
             self.deliver(self.delivery_buffer.pop(0))
+    
+    def buffer_packet(self, packet):
+        #insert the packet in sorted order by sequence number to the buffer list
+        for index, buffered_packet in enumerate(self.delivery_buffer):
+            if buffered_packet.sequence_number > packet.sequence_number:
+                self.delivery_buffer.insert(index, packet)
+                return
+        #if this packet is the greatest element in the list, append it instead
+        self.delivery_buffer.append(packet)
 
     def receiver_thread(self):
         while True:
@@ -64,33 +65,26 @@ class SR_Server:
                 # if the packet is valid and in the window, process it
                 if is_valid and sequence_number in [s % self.sequence_number_count for s in range(self.window_base, self.window_base + self.window_size)]: 
                     #send the ack and attempt to deliver the packet
-                    ack = PacketDescriptor('ACK', sequence_number)
+                    ack = GBN_PacketDescriptor('ACK', sequence_number)
                     print(f'Sending ACK ({ack.sequence_number})')
                     send_packet.send_message(self.sock, client_address, ack.sequence_number, ack.message)
 
-                    packet = PacketDescriptor(message, sequence_number)
+                    packet = GBN_PacketDescriptor(message, sequence_number)
 
                     # if the packet is in order, deliver it and attempt to deliver more, otherwise buffer it
                     if(packet.sequence_number == self.window_base):
                         self.deliver(packet)
                         self.attempt_to_deliver_packets()
                     else:
-                        bisect.insort(self.delivery_buffer, packet)
+                        self.buffer_packet(packet)
 
                     if message == b'DONE':
                         print('DONE received')
                         self.sock.settimeout(self.server_timeout)
+                else:
+                    if not is_valid:
+                        self.statistics.numErrors += 1
 
             except socket.timeout:
                 print('Client is done and server_timeout has elapsed. Closing server...')
                 break
-
-
-# create UDP socket
-sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
-# bind socket to server-ip, server-port
-sock.bind((server_ip, server_port))
-
-server = SR_Server(sock, window_size=window_size, server_timeout=timeout_value)
-server.start_server()

@@ -1,24 +1,11 @@
-import configparser
 import sys
 import socket
 import threading
-import queue
-from collections import namedtuple
+from recordclass import recordclass
 
+from record_definitions import *
 import rdt_headers
 import send_packet
-
-# read the server's port number and ip from the configuration file
-config = configparser.ConfigParser()
-config.read('udp.conf')
-server_ip = config['server']['ip']
-server_port = int(config['server']['port'])
-
-timeout_value = 5  # later this will be part of the config file
-window_size = 10  # later this will be part of the config file
-
-PacketDescriptor = namedtuple('PacketDescriptor', 'message sequence_number')
-
 
 class GBN_Client:
     window_size = 10
@@ -30,23 +17,30 @@ class GBN_Client:
     server_address = ('127.0.0.1', 8080)
     internal_lock = threading.Lock()
     timeout_delay = 5
+    corrupt_probability = 0
+
     timeout_timer = None
     done = False
 
+    statistics = None
     receiver = None
 
     def __init__(self, sock, server_address, timeout_delay=5, window_size=10, initial_sequence_number=0,
-                 sequence_number_count=None):
+                 sequence_number_count=None, corrupt_probability=0):
         self.sock = sock
         self.server_address = server_address
         self.window_size = window_size
         self.sequence_number_count = sequence_number_count if sequence_number_count is not None else window_size + 1
         self.window_base = next_sequence_number = initial_sequence_number
         self.timeout_delay = timeout_delay
+        self.corrupt_probability = corrupt_probability
+
         self.timeout_timer = threading.Timer(timeout_delay, self.retransmit_unacked_messages)
 
         self.internal_lock = threading.Lock()
         self.done = False
+
+        self.statistics = ClientStatistics(0, 0, 0, 0, 0, None)
 
         self.receiver = threading.Thread(target=self.receiver_thread)
         self.receiver.start()
@@ -66,11 +60,15 @@ class GBN_Client:
     def retransmit_unacked_messages(self):
         self.internal_lock.acquire()
 
+        self.statistics.numTOevents+= 1
+        self.statistics.numRetransmits += len(self.unacked_list)
+
         self.start_timer()
 
         print('Retransmitting unacked packets')
         for packet in self.unacked_list:
             send_packet.send_message(self.sock, self.server_address, packet.sequence_number, packet.message)
+
         self.internal_lock.release()
 
     def send(self, message):
@@ -79,15 +77,22 @@ class GBN_Client:
             raise RuntimeError('Cannot send messages from client after done')
 
         #if the next sequence number is not in the range of valid sequence numbers, we can't send the packet
-        if self.next_sequence_number not in [x % sequence_number_count for x in range(self.window_base, self.window_base + self.window_size)]:
+        if self.next_sequence_number not in [x % self.sequence_number_count for x in range(self.window_base, self.window_base + self.window_size)]:
             return False
         
         self.internal_lock.acquire()
 
         # send the message and add it to the list of unacked packets
-        packet = PacketDescriptor(message, self.next_sequence_number)
+        packet = GBN_PacketDescriptor(message, self.next_sequence_number)
+        
         print(f'Sending packet: ({packet.message}, {packet.sequence_number})')
-        send_packet.send_message(self.sock, self.server_address, packet.sequence_number, packet.message)
+        self.statistics.numTransmits+= 1
+        self.statistics.numBytes += len(message)
+
+        corrupt = send_packet.send_message(self.sock, self.server_address, packet.sequence_number, packet.message, corrupt_prob = self.corrupt_probability)
+        if corrupt:
+            self.statistics.numCorrupts+= 1
+        
         self.unacked_list.append(packet)
 
         # if this is the first packet of the window, start the timeout timer
@@ -99,6 +104,8 @@ class GBN_Client:
 
         self.internal_lock.release()
 
+        return True
+
     def send_message_set(self, message_set):
         for m in message_set:
             self.send(m)
@@ -107,7 +114,7 @@ class GBN_Client:
         # repeat until we have received ack for all messages and the client is done sending messages
         while self.unacked_list or not self.done:
             # receive message from server and parse it
-            message_data, server_address = sock.recvfrom(1024)
+            message_data, server_address = self.sock.recvfrom(1024)
             checksum, sequence_number, message = rdt_headers.parse_rdt_packet(message_data)
             # validate the checksum
             is_valid = rdt_headers.is_valid_checksum(checksum, sequence_number, message)
@@ -130,18 +137,3 @@ class GBN_Client:
                     self.start_timer()
 
             self.internal_lock.release()
-
-
-sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-server_address = (server_ip, server_port)
-
-client = GBN_Client(sock, server_address, timeout_value, window_size)
-
-
-def message_generator(n=10):
-    for i in range(n):
-        yield f'This is packet {i} of {n}'
-
-
-client.send_message_set(message_generator(n=10))
-client.done_sending()
