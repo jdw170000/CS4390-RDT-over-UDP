@@ -3,7 +3,9 @@ This project aims to implement the Go Back N and Selective Repeat formulations o
 
 This project runs on python 3.9+ and requires the following packages: configparser, socket, struct
 
-To use basic-udp-client and basic-udp-server, you will need to create a udp.conf file in the directory from which you are running them.
+To use rdt_client and rdt_server, you will need to create an rdt.conf file in the directory from which you are running them.
+
+See the run_rdt_client_example.py and run_rdt_server_example.py for examples on how to use these scripts.
 
 This file should look like the following:
 
@@ -13,10 +15,26 @@ ip = \<server id address\>
 
 port = \<server port\>
 
+timeout = \<server timeout\>
+
 
 \[client\]
 
 port = \<client port\>
+
+send_fail_delay = \<time to wait after failing to send a message\>
+
+max_payload_size = \<maximum payload size\>
+
+corrupt_probability = \<probability to artificially corrupt a file\>
+
+
+\[global\]
+
+mode = \<SR for selective repeat, or GBN for go back N\>
+
+window_size = \<window size\>
+
 
 ## Running on mininet
 1. Ensure you have the following files in your mininet VM
