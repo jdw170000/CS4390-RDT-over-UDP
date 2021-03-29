@@ -1,11 +1,7 @@
-import sys
-import socket
 import threading
-from recordclass import recordclass
+from rdt.record_definitions import *
+from rdt import rdt_headers, send_packet
 
-from record_definitions import *
-import rdt_headers
-import send_packet
 
 class GBN_Client:
     window_size = 10
@@ -60,7 +56,7 @@ class GBN_Client:
     def retransmit_unacked_messages(self):
         self.internal_lock.acquire()
 
-        self.statistics.numTOevents+= 1
+        self.statistics.numTOevents += 1
         self.statistics.numRetransmits += len(self.unacked_list)
 
         self.start_timer()
@@ -76,23 +72,25 @@ class GBN_Client:
         if self.done:
             raise RuntimeError('Cannot send messages from client after done')
 
-        #if the next sequence number is not in the range of valid sequence numbers, we can't send the packet
-        if self.next_sequence_number not in [x % self.sequence_number_count for x in range(self.window_base, self.window_base + self.window_size)]:
+        # if the next sequence number is not in the range of valid sequence numbers, we can't send the packet
+        if self.next_sequence_number not in [x % self.sequence_number_count for x in
+                                             range(self.window_base, self.window_base + self.window_size)]:
             return False
-        
+
         self.internal_lock.acquire()
 
         # send the message and add it to the list of unacked packets
         packet = GBN_PacketDescriptor(message, self.next_sequence_number)
-        
+
         print(f'Sending packet: ({packet.message}, {packet.sequence_number})')
-        self.statistics.numTransmits+= 1
+        self.statistics.numTransmits += 1
         self.statistics.numBytes += len(message)
 
-        corrupt = send_packet.send_message(self.sock, self.server_address, packet.sequence_number, packet.message, corrupt_prob = self.corrupt_probability)
+        corrupt = send_packet.send_message(self.sock, self.server_address, packet.sequence_number, packet.message,
+                                           corrupt_prob=self.corrupt_probability)
         if corrupt:
-            self.statistics.numCorrupts+= 1
-        
+            self.statistics.numCorrupts += 1
+
         self.unacked_list.append(packet)
 
         # if this is the first packet of the window, start the timeout timer

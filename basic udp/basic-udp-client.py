@@ -1,8 +1,7 @@
 import configparser
 import socket
 
-import rdt_headers
-import send_packet
+from rdt import rdt_headers, send_packet
 
 # read the server's port number and ip from the configuration file
 config = configparser.ConfigParser()

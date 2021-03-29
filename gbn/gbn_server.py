@@ -1,11 +1,9 @@
-import configparser
 import socket
 import threading
-from collections import namedtuple
 
-from record_definitions import *
-import rdt_headers
-import send_packet
+from rdt.record_definitions import *
+from rdt import rdt_headers, send_packet
+
 
 class GBN_Server:
     sock = 0
@@ -23,9 +21,9 @@ class GBN_Server:
         self.sequence_number_count = sequence_number_count if sequence_number_count is not None else window_size + 1
         self.expected_sequence_number = initial_sequence_number
 
-        self.statistics = ServerStatistics(0,0,0)
+        self.statistics = ServerStatistics(0, 0, 0)
         self.done = False
-        
+
         self.server = threading.Thread(target=self.receiver_thread)
         self.server.start()
 
@@ -48,7 +46,7 @@ class GBN_Server:
                     if message == b'DONE':
                         print('DONE received')
                         self.sock.settimeout(self.server_timeout)
-                
+
                 else:
                     if not is_valid:
                         self.statistics.numErrors += 1

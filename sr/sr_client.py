@@ -1,12 +1,8 @@
 import configparser
-import sys
-import socket
 import threading
-from recordclass import recordclass
 
-from record_definitions import *
-import rdt_headers
-import send_packet
+from rdt.record_definitions import *
+from rdt import rdt_headers, send_packet
 
 # read the server's port number and ip from the configuration file
 config = configparser.ConfigParser()
@@ -39,7 +35,7 @@ class SR_Client:
         self.sock = sock
         self.server_address = server_address
         self.window_size = window_size
-        self.sequence_number_count = sequence_number_count if sequence_number_count is not None else window_size*2
+        self.sequence_number_count = sequence_number_count if sequence_number_count is not None else window_size * 2
         self.window_base = next_sequence_number = initial_sequence_number
         self.timeout_delay = timeout_delay
         self.corrupt_probability = corrupt_probability
@@ -47,7 +43,7 @@ class SR_Client:
         self.internal_lock = threading.Lock()
         self.done = False
 
-        self.statistics = ClientStatistics(0,0,0,0,0,None) 
+        self.statistics = ClientStatistics(0, 0, 0, 0, 0, None)
 
         self.receiver = threading.Thread(target=self.receiver_thread)
         self.receiver.start()
@@ -62,7 +58,7 @@ class SR_Client:
         packet.timer = threading.Timer(self.timeout_delay, self.retransmit_packet(packet))
         packet.timer.start()
 
-    #factroy function to make packet retransmission functions for use during timeout
+    # factroy function to make packet retransmission functions for use during timeout
     def retransmit_packet(self, packet):
         def retransmit():
             self.internal_lock.acquire()
@@ -70,8 +66,8 @@ class SR_Client:
             print(f'Retransmitting unacked packet {packet.sequence_number}')
             self.statistics.numRetransmits += 1
             self.statistics.numTOevents += 1
-            
-            #retransmit the packet and reset the timer
+
+            # retransmit the packet and reset the timer
             send_packet.send_message(self.sock, self.server_address, packet.sequence_number, packet.message)
             self.start_packet_timer(packet)
 
@@ -84,9 +80,11 @@ class SR_Client:
         if self.done:
             raise RuntimeError('Cannot send messages from client after done')
 
-        #if the next sequence number is not in the range of valid sequence numbers, we can't send the packet
-        if self.next_sequence_number not in [x % self.sequence_number_count for x in range(self.window_base, self.window_base + self.window_size)]:
-            print(f'sequence number {self.next_sequence_number} is not in the window starting at {self.window_base} with size {self.window_size} modulo {self.sequence_number_count}')
+        # if the next sequence number is not in the range of valid sequence numbers, we can't send the packet
+        if self.next_sequence_number not in [x % self.sequence_number_count for x in
+                                             range(self.window_base, self.window_base + self.window_size)]:
+            print(
+                f'sequence number {self.next_sequence_number} is not in the window starting at {self.window_base} with size {self.window_size} modulo {self.sequence_number_count}')
             return False
 
         self.internal_lock.acquire()
@@ -94,12 +92,13 @@ class SR_Client:
         # send the message and add it to the list of undelivered packets
         packet = SR_PacketDescriptor(message, self.next_sequence_number, False, None)
         packet.timer = threading.Timer(self.timeout_delay, self.retransmit_packet(packet));
-        
+
         print(f'Sending packet: ({packet.message}, {packet.sequence_number})')
         self.statistics.numTransmits += 1
-        self.statistics.numBytes += len(message) #only count the payload bytes in the bytes sent
-        
-        corrupted = send_packet.send_message(self.sock, self.server_address, packet.sequence_number, packet.message, corrupt_prob=self.corrupt_probability)
+        self.statistics.numBytes += len(message)  # only count the payload bytes in the bytes sent
+
+        corrupted = send_packet.send_message(self.sock, self.server_address, packet.sequence_number, packet.message,
+                                             corrupt_prob=self.corrupt_probability)
         if corrupted:
             self.statistics.numCorrupts += 1
 
@@ -113,12 +112,11 @@ class SR_Client:
 
         return True
 
-
     def mark_as_acked(self, packet):
         packet.acked = True
         packet.timer.cancel();
 
-        #deliver all continuous acked packets at the bottom of the window
+        # deliver all continuous acked packets at the bottom of the window
         while self.undelivered_list and self.undelivered_list[0].acked:
             delivered_packet = self.undelivered_list.pop(0)
             print(f'Packet {delivered_packet.sequence_number} has been delivered')
@@ -144,5 +142,5 @@ class SR_Client:
                     print(f'Received ACK({sequence_number}), packet marked as acked')
                 except StopIteration:
                     print(f'Received ACK({sequence_number}), but that packet was not found in the undelivered list')
-            
+
             self.internal_lock.release()
