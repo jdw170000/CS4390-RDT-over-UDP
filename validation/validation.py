@@ -7,19 +7,6 @@ from mininet.log import setLogLevel
 import validationTopos as vt
 
 def perfTestArgs(algo, link, payload_size, window_size, corrupt_prob, file):
-    if (algo == 'GBN'):
-        h1script = 'gbn_server.py'
-        h2script = 'gbn_client.py'
-    elif (algo == 'SR'):
-        h1script = 'sr_server.py'
-        h2script = 'sr_client.py'
-    else:
-        raise Exception('Invalid algo parameter set')
-
-    # Construct commands
-    h1cmd = f'python3 {h1script} {payload_size} {window_size} {corrupt_prob} {file}'
-    h2cmd = f'python3 {h2script} {payload_size} {window_size} {corrupt_prob} {file}'
-
     "Create network"
     net = Mininet(topo=link, link=TCLink)
     net.start()
@@ -29,8 +16,8 @@ def perfTestArgs(algo, link, payload_size, window_size, corrupt_prob, file):
     net.pingAll()
     c0, h1, h2 = net.get('c0', 'h1', 'h2')
     print('c0.IP, h1.IP, h2.IP = ', c0.IP, h1.IP(), h2.IP())
-    h1.cmd(h1cmd)
-    h2.cmd(h2cmd)
+    h1.cmd(f'python3 -m server -a {algo} -ip {h2.IP()} -p 5006 -ws {window_size}')
+    h2.cmd(f'python3 -m client -a {algo} -ip {h1.IP()} -p 5006 -ws {window_size} -ps {payload_size} -cp {corrupt_prob} -f {file}')
     print("IP address of h1 is ", h1.IP())
     print("IP address of h2 is ", h2.IP())
 
