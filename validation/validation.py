@@ -6,9 +6,11 @@ from mininet.log import setLogLevel
 
 import validationTopos as vt
 
-def perfTestArgs(algo, link, payload_size, window_size, corrupt_prob, file):
+def perfTestArgs(algo, topo, payload_size, window_size, corrupt_prob, file):
+    topoInstance = topo()
+
     "Create network"
-    net = Mininet(topo=link, link=TCLink)
+    net = Mininet(topo=topoInstance, link=TCLink)
     net.start()
     print("Dumping host connections")
     dumpNodeConnections(net.hosts)
@@ -21,76 +23,76 @@ def perfTestArgs(algo, link, payload_size, window_size, corrupt_prob, file):
     print("IP address of h1 is ", h1.IP())
     print("IP address of h2 is ", h2.IP())
 
-    CLI(net)
+    # CLI(net)
     net.stop()
 
 def GBN_basic():
     payload_size = 100
-    link = vt.linkOneGigNoDelayNoLoss
+    topo = vt.TopoNoDelayNoLoss
     window_size = 10
     corrupt_prob = 10
     file = '500K.txt'
-    perfTestArgs('GBN', link, payload_size, window_size, corrupt_prob, file)
+    perfTestArgs('GBN', topo, payload_size, window_size, corrupt_prob, file)
 
 def SR_basic():
     payload_size = 100
-    link = vt.linkOneGigNoDelayNoLoss
+    topo = vt.TopoNoDelayNoLoss
     window_size = 10
     corrupt_prob = 10
     file = '500K.txt'
-    perfTestArgs('SR', link, payload_size, window_size, corrupt_prob, file)
+    perfTestArgs('SR', topo, payload_size, window_size, corrupt_prob, file)
 
 def GBN_window():
     payload_size = 100
-    link = vt.linkOneGig5Delay10Loss
+    topo = vt.Topo5Delay10Loss
     corrupt_prob = 0
     file = '500K.txt'
 
     window_size = 10
-    perfTestArgs('GBN', link, payload_size, window_size, corrupt_prob, file)
+    perfTestArgs('GBN', topo, payload_size, window_size, corrupt_prob, file)
     window_size = 20
-    perfTestArgs('GBN', link, payload_size, window_size, corrupt_prob, file)
+    perfTestArgs('GBN', topo, payload_size, window_size, corrupt_prob, file)
     window_size = 40
-    perfTestArgs('GBN', link, payload_size, window_size, corrupt_prob, file)
+    perfTestArgs('GBN', topo, payload_size, window_size, corrupt_prob, file)
 
 def SR_window():
     payload_size = 100
-    link = vt.linkOneGig5Delay10Loss
+    topo = vt.Topo5Delay10Loss
     corrupt_prob = 0
     file = '500K.txt'
 
     window_size = 10
-    perfTestArgs('SR', link, payload_size, window_size, corrupt_prob, file)
+    perfTestArgs('SR', topo, payload_size, window_size, corrupt_prob, file)
     window_size = 20
-    perfTestArgs('SR', link, payload_size, window_size, corrupt_prob, file)
+    perfTestArgs('SR', topo, payload_size, window_size, corrupt_prob, file)
     window_size = 40
-    perfTestArgs('SR', link, payload_size, window_size, corrupt_prob, file)
+    perfTestArgs('SR', topo, payload_size, window_size, corrupt_prob, file)
 
 def GBN_payload():
-    link = vt.linkOneGig5Delay10Loss
+    topo = vt.Topo5Delay10Loss
     window_size = 0
     corrupt_prob = 10
     file = '500K.txt'
 
     payload_size = 25
-    perfTestArgs('GBN', link, payload_size, window_size, corrupt_prob, file)
+    perfTestArgs('GBN', topo, payload_size, window_size, corrupt_prob, file)
     payload_size = 50
-    perfTestArgs('GBN', link, payload_size, window_size, corrupt_prob, file)
+    perfTestArgs('GBN', topo, payload_size, window_size, corrupt_prob, file)
     payload_size = 100
-    perfTestArgs('GBN', link, payload_size, window_size, corrupt_prob, file)
+    perfTestArgs('GBN', topo, payload_size, window_size, corrupt_prob, file)
 
 def SR_payload():
-    link = vt.linkOneGig5Delay10Loss
+    topo = vt.Topo5Delay10Loss
     window_size = 0
     corrupt_prob = 10
     file = '500K.txt'
 
     payload_size = 25
-    perfTestArgs('SR', link, payload_size, window_size, corrupt_prob, file)
+    perfTestArgs('SR', topo, payload_size, window_size, corrupt_prob, file)
     payload_size = 50
-    perfTestArgs('SR', link, payload_size, window_size, corrupt_prob, file)
+    perfTestArgs('SR', topo, payload_size, window_size, corrupt_prob, file)
     payload_size = 100
-    perfTestArgs('SR', link, payload_size, window_size, corrupt_prob, file)
+    perfTestArgs('SR', topo, payload_size, window_size, corrupt_prob, file)
 
 def GBN_delay():
     payload_size = 100
@@ -98,12 +100,12 @@ def GBN_delay():
     corrupt_prob = 10
     file = '500K.txt'
 
-    link = vt.linkOneGig0Delay10Loss
-    perfTestArgs('GBN', link, payload_size, window_size, corrupt_prob, file)
-    link = vt.linkOneGig5Delay10Loss
-    perfTestArgs('GBN', link, payload_size, window_size, corrupt_prob, file)
-    link = vt.linkOneGig10Delay10Loss
-    perfTestArgs('GBN', link, payload_size, window_size, corrupt_prob, file)
+    topo = vt.Topo0Delay10Loss
+    perfTestArgs('GBN', topo, payload_size, window_size, corrupt_prob, file)
+    topo = vt.Topo5Delay10Loss
+    perfTestArgs('GBN', topo, payload_size, window_size, corrupt_prob, file)
+    topo = vt.Topo10Delay10Loss
+    perfTestArgs('GBN', topo, payload_size, window_size, corrupt_prob, file)
 
 def SR_delay():
     payload_size = 100
@@ -111,12 +113,12 @@ def SR_delay():
     corrupt_prob = 10
     file = '500K.txt'
 
-    link = vt.linkOneGig0Delay10Loss
-    perfTestArgs('SR', link, payload_size, window_size, corrupt_prob, file)
-    link = vt.linkOneGig5Delay10Loss
-    perfTestArgs('SR', link, payload_size, window_size, corrupt_prob, file)
-    link = vt.linkOneGig10Delay10Loss
-    perfTestArgs('SR', link, payload_size, window_size, corrupt_prob, file)
+    topo = vt.Topo0Delay10Loss
+    perfTestArgs('SR', topo, payload_size, window_size, corrupt_prob, file)
+    topo = vt.Topo5Delay10Loss
+    perfTestArgs('SR', topo, payload_size, window_size, corrupt_prob, file)
+    topo = vt.Topo10Delay10Loss
+    perfTestArgs('SR', topo, payload_size, window_size, corrupt_prob, file)
 
 def GBN_loss():
     payload_size = 100
@@ -124,12 +126,12 @@ def GBN_loss():
     corrupt_prob = 10
     file = '500K.txt'
 
-    link = vt.linkOneGig5Delay5Loss
-    perfTestArgs('GBN', link, payload_size, window_size, corrupt_prob, file)
-    link = vt.linkOneGig5Delay10Loss
-    perfTestArgs('GBN', link, payload_size, window_size, corrupt_prob, file)
-    link = vt.linkOneGig5Delay20Loss
-    perfTestArgs('GBN', link, payload_size, window_size, corrupt_prob, file)
+    topo = vt.Topo5Delay5Loss
+    perfTestArgs('GBN', topo, payload_size, window_size, corrupt_prob, file)
+    topo = vt.Topo5Delay10Loss
+    perfTestArgs('GBN', topo, payload_size, window_size, corrupt_prob, file)
+    topo = vt.Topo5Delay20Loss
+    perfTestArgs('GBN', topo, payload_size, window_size, corrupt_prob, file)
 
 def SR_loss():
     payload_size = 100
@@ -137,12 +139,12 @@ def SR_loss():
     corrupt_prob = 10
     file = '500K.txt'
 
-    link = vt.linkOneGig5Delay5Loss
-    perfTestArgs('SR', link, payload_size, window_size, corrupt_prob, file)
-    link = vt.linkOneGig5Delay10Loss
-    perfTestArgs('SR', link, payload_size, window_size, corrupt_prob, file)
-    link = vt.linkOneGig5Delay20Loss
-    perfTestArgs('SR', link, payload_size, window_size, corrupt_prob, file)
+    topo = vt.Topo5Delay5Loss
+    perfTestArgs('SR', topo, payload_size, window_size, corrupt_prob, file)
+    topo = vt.Topo5Delay10Loss
+    perfTestArgs('SR', topo, payload_size, window_size, corrupt_prob, file)
+    topo = vt.Topo5Delay20Loss
+    perfTestArgs('SR', topo, payload_size, window_size, corrupt_prob, file)
 
 if __name__ == '__main__':
 
