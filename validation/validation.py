@@ -6,6 +6,7 @@ from mininet.log import setLogLevel
 
 import validationTopos as vt
 
+
 def perfTestArgs(algo, topo, payload_size, window_size, corrupt_prob, file):
     topoInstance = topo()
 
@@ -20,11 +21,8 @@ def perfTestArgs(algo, topo, payload_size, window_size, corrupt_prob, file):
     print('c0.IP, h1.IP, h2.IP = ', c0.IP, h1.IP(), h2.IP())
     h1.cmd(f'python3 -m server -a {algo} -ip {h2.IP()} -p 5006 -ws {window_size}')
     h2.cmd(f'python3 -m client -a {algo} -ip {h1.IP()} -p 5006 -ws {window_size} -ps {payload_size} -cp {corrupt_prob} -f {file}')
-    print("IP address of h1 is ", h1.IP())
-    print("IP address of h2 is ", h2.IP())
-
-    # CLI(net)
     net.stop()
+
 
 def GBN_basic():
     payload_size = 100
@@ -34,6 +32,7 @@ def GBN_basic():
     file = '500K.txt'
     perfTestArgs('GBN', topo, payload_size, window_size, corrupt_prob, file)
 
+
 def SR_basic():
     payload_size = 100
     topo = vt.TopoNoDelayNoLoss
@@ -41,6 +40,7 @@ def SR_basic():
     corrupt_prob = 10
     file = '500K.txt'
     perfTestArgs('SR', topo, payload_size, window_size, corrupt_prob, file)
+
 
 def GBN_window():
     payload_size = 100
@@ -55,6 +55,7 @@ def GBN_window():
     window_size = 40
     perfTestArgs('GBN', topo, payload_size, window_size, corrupt_prob, file)
 
+
 def SR_window():
     payload_size = 100
     topo = vt.Topo5Delay10Loss
@@ -67,6 +68,7 @@ def SR_window():
     perfTestArgs('SR', topo, payload_size, window_size, corrupt_prob, file)
     window_size = 40
     perfTestArgs('SR', topo, payload_size, window_size, corrupt_prob, file)
+
 
 def GBN_payload():
     topo = vt.Topo5Delay10Loss
@@ -81,6 +83,7 @@ def GBN_payload():
     payload_size = 100
     perfTestArgs('GBN', topo, payload_size, window_size, corrupt_prob, file)
 
+
 def SR_payload():
     topo = vt.Topo5Delay10Loss
     window_size = 0
@@ -93,6 +96,7 @@ def SR_payload():
     perfTestArgs('SR', topo, payload_size, window_size, corrupt_prob, file)
     payload_size = 100
     perfTestArgs('SR', topo, payload_size, window_size, corrupt_prob, file)
+
 
 def GBN_delay():
     payload_size = 100
@@ -107,6 +111,7 @@ def GBN_delay():
     topo = vt.Topo10Delay10Loss
     perfTestArgs('GBN', topo, payload_size, window_size, corrupt_prob, file)
 
+
 def SR_delay():
     payload_size = 100
     window_size = 0
@@ -119,6 +124,7 @@ def SR_delay():
     perfTestArgs('SR', topo, payload_size, window_size, corrupt_prob, file)
     topo = vt.Topo10Delay10Loss
     perfTestArgs('SR', topo, payload_size, window_size, corrupt_prob, file)
+
 
 def GBN_loss():
     payload_size = 100
@@ -133,6 +139,7 @@ def GBN_loss():
     topo = vt.Topo5Delay20Loss
     perfTestArgs('GBN', topo, payload_size, window_size, corrupt_prob, file)
 
+
 def SR_loss():
     payload_size = 100
     window_size = 0
@@ -146,8 +153,8 @@ def SR_loss():
     topo = vt.Topo5Delay20Loss
     perfTestArgs('SR', topo, payload_size, window_size, corrupt_prob, file)
 
-if __name__ == '__main__':
 
+if __name__ == '__main__':
     # tell mininet to print useful info
     setLogLevel('info')
 

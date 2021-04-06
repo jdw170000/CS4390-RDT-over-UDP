@@ -15,8 +15,8 @@ parser.add_argument('-ps', '--payload-size', required=False)
 parser.add_argument('-cp', '--corrupt-prob', required=False)
 parser.add_argument('-f', '--file', required=False)
 
-parser.add_argument('-m', '--mode', required=True) # client/server
-parser.add_argument('-a', '--algo', required=True) # GBN or SR
+parser.add_argument('-m', '--mode', required=True)  # client/server
+parser.add_argument('-a', '--algo', required=True)  # GBN or SR
 parser.add_argument('-ip', '--ip', required=True)
 parser.add_argument('-p', '--port', required=True)
 
@@ -24,10 +24,10 @@ parser.add_argument('-p', '--port', required=True)
 args = vars(parser.parse_args())
 
 # Socket setup
-sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # create UDP socket
-sock.bind((args['ip'], args['port'])) # bind socket to server-ip, server-port
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # create UDP socket
+sock.bind((args['ip'], args['port']))  # bind socket to server-ip, server-port
 
-if (args['mode']=='server'):
+if (args['mode'] == 'server'):
     # Server mode
     server = RDT_Server(sock, args['algo'], timeout_value=10, window_size=args['window-size'])
     server.server.server.join()
@@ -47,5 +47,3 @@ elif (args['mode'] == 'client'):
     client.print_statistics()
 else:
     raise Exception(args['mode'] + ' is not a valid mode')
-
-
