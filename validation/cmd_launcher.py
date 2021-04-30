@@ -43,7 +43,6 @@ elif (args['mode'] == 'client'):
                             max_payload_size=int(args['payload_size']), sock=sock, timeout_value=5,
                             window_size=int(args['window_size']), corrupt_probability=int(args['corrupt_prob']))
     start_time = time.perf_counter()
-    print(args['file'])
     rdt_client.send_file(args['file'])
     rdt_client.done()
     # wait for the client to finish receiving acks

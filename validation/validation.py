@@ -32,7 +32,7 @@ def GBN_basic():
     topo = vt.TopoNoDelayNoLoss
     window_size = 10
     corrupt_prob = 10
-    file = '500K.txt'
+    file = 'testFile.txt'
     perfTestArgs('GBN', topo, payload_size, window_size, corrupt_prob, file)
 
 
