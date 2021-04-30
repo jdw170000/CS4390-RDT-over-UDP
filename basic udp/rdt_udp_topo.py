@@ -36,12 +36,21 @@ def perfTest():
     net.pingAll()
     c0, h1, h2 = net.get('c0', 'h1', 'h2')
     print('c0.IP, h1.IP, h2.IP = ', c0.IP, h1.IP(), h2.IP())
-    h1.cmd('python3 basic-udp-server.py out.out > r.out &')
-    h2.cmd('python3 basic-udp-client.py med.txt 100 5 30 > s.out &')
+
+    # debug stuff
+    # print(topo)
+    # print(vars(topo))
+    # print(f'net: {net}')
+    # print(vars(net))
+
+    # h1.cmd('python3 basic-udp-server.py out.out > r.out &')
+    # h2.cmd('python3 basic-udp-client.py med.txt 100 5 30 > s.out &')
+    h1.cmd('python3 ../validation/cmd_launcher.py -m server -a GBN -ip 10.0.0.1 -p 5006 -ws 10 > s.out')
+    h2.cmd("python3 ../validation/cmd_launcher.py -m client -a GBN -ip 10.0.0.1 -p 5006 -ws 10 -cp 0 -ps 10 -f 'testFile.txt'> r.out &")
     print("IP address of h1 is ", h1.IP())
     print("IP address of h2 is ", h2.IP())
 
-    CLI(net)  #####
+    # CLI(net)  #####
     net.stop()
 
 

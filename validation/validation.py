@@ -22,7 +22,14 @@ def perfTestArgs(algo, topo, payload_size, window_size, corrupt_prob, file, test
     net.pingAll()
     c0, h1, h2 = net.get('c0', 'h1', 'h2')
     print('c0.IP, h1.IP, h2.IP = ', c0.IP, h1.IP(), h2.IP())
-    h1.cmd(f'python3 cmd_launcher.py -m server -a {algo} -ip {h2.IP()} -p 5006 -ws {window_size} > {testname}server.out')
+
+    # debug stuff
+    print(topoInstance)
+    print(vars(topoInstance))
+    print(f'net: {net}')
+    print(vars(net))
+
+    h1.cmd(f'python3 cmd_launcher.py -m server -a {algo} -ip {h1.IP()} -p 5006 -ws {window_size} > {testname}server.out')
     h2.cmd(f'python3 cmd_launcher.py -m client -a {algo} -ip {h1.IP()} -p 5006 -ws {window_size} -ps {payload_size} -cp {corrupt_prob} -f {file} > {testname}client.out')
     net.stop()
 
