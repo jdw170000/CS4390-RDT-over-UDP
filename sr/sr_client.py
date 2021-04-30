@@ -5,14 +5,14 @@ import time
 from rdt.record_definitions import *
 from rdt import rdt_headers, send_packet
 
-# read the server's port number and ip from the configuration file
-config = configparser.ConfigParser()
-config.read('rdt.conf')
-server_ip = config['server']['ip']
-server_port = int(config['server']['port'])
+# # read the server's port number and ip from the configuration file
+# config = configparser.ConfigParser()
+# config.read('rdt.conf')
+# server_ip = config['server']['ip']
+# server_port = int(config['server']['port'])
 
-timeout_value = 5  # later this will be part of the config file
-window_size = 10  # later this will be part of the config file
+# timeout_value = 5  # later this will be part of the config file
+# window_size = 10  # later this will be part of the config file
 
 
 class SR_Client:
@@ -104,7 +104,7 @@ class SR_Client:
             self.statistics.numCorrupts += 1
 
         self.undelivered_list.append(packet)
-        self.start_packet_timer(packet);
+        self.start_packet_timer(packet)
 
         # increment sequence number
         self.next_sequence_number = (self.next_sequence_number + 1) % self.sequence_number_count
@@ -115,7 +115,7 @@ class SR_Client:
 
     def mark_as_acked(self, packet):
         packet.acked = True
-        packet.timer.cancel();
+        packet.timer.cancel()
 
         # deliver all continuous acked packets at the bottom of the window
         while self.undelivered_list and self.undelivered_list[0].acked:

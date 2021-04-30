@@ -47,7 +47,7 @@ class RDT_Client:
     def send_message_set(self, message_set):
         for m in message_set:
             if len(m) > self.MAX_PAYLOAD_SIZE:
-                raise ValueError(f'message payloads cannot be larger than {MAX_PAYLOAD_SIZE} Bytes')
+                raise ValueError(f'message payloads cannot be larger than {self.MAX_PAYLOAD_SIZE} Bytes')
             while not self.client.send(m):
                 time.sleep(self.send_fail_delay)
 

@@ -5,3 +5,9 @@ qemu-system-x86_64 -machine accel=kvm -m 2048 mininet-vm-x86_64.vmdk -net nic,mo
 
 # ssh into mininet-vm over local KVM port
 ssh -Y -p 8022 mininet@localhost
+
+# test cmd_launcher client
+sudo python3 cmd_launcher.py -m client -a GBN -ip 127.0.0.2 -p 5006 -ws 10 -cp 0 -ps 10 -f '500K.txt'
+
+# test cmd_launcher server
+sudo python3 cmd_launcher.py -m server -a GBN -ip 127.0.0.1 -p 5006 -ws 10

@@ -1,3 +1,6 @@
+import os, sys
+sys.path.insert(0, os.path.abspath(".."))
+
 from mininet.cli import CLI
 from mininet.net import Mininet
 from mininet.link import TCLink
@@ -19,8 +22,8 @@ def perfTestArgs(algo, topo, payload_size, window_size, corrupt_prob, file):
     net.pingAll()
     c0, h1, h2 = net.get('c0', 'h1', 'h2')
     print('c0.IP, h1.IP, h2.IP = ', c0.IP, h1.IP(), h2.IP())
-    h1.cmd(f'python3 -m server -a {algo} -ip {h2.IP()} -p 5006 -ws {window_size}')
-    h2.cmd(f'python3 -m client -a {algo} -ip {h1.IP()} -p 5006 -ws {window_size} -ps {payload_size} -cp {corrupt_prob} -f {file}')
+    h1.cmd(f'python3 cmd_launcher.py -m server -a {algo} -ip {h2.IP()} -p 5006 -ws {window_size} >> server.out')
+    h2.cmd(f'python3 cmd_launcher.py -m client -a {algo} -ip {h1.IP()} -p 5006 -ws {window_size} -ps {payload_size} -cp {corrupt_prob} -f {file} >> client.out')
     net.stop()
 
 
@@ -159,13 +162,23 @@ if __name__ == '__main__':
     setLogLevel('info')
 
     # run tests
+    print('GBN_basic')
     GBN_basic()
+    print('SR_basic')
     SR_basic()
+    print('GBN_window')
     GBN_window()
+    print('SR_window')
     SR_window()
+    print('GBN_payload')
     GBN_payload()
+    print('SR_payload')
     SR_payload()
+    print('GBN_delay')
     GBN_delay()
+    print('SR_delay')
     SR_delay()
+    print('GBN_loss')
     GBN_loss()
+    print('SR_loss')
     SR_loss()

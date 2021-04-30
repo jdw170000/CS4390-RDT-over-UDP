@@ -1,11 +1,14 @@
+import os, sys
+sys.path.insert(0, os.path.abspath(".."))
+
 import argparse
 import socket
 
 # Create arg parser
 import time
 
-from rdt.rdt_server import RDT_Server
 from rdt.rdt_client import RDT_Client
+from rdt.rdt_server import RDT_Server
 
 parser = argparse.ArgumentParser()
 
@@ -22,28 +25,31 @@ parser.add_argument('-p', '--port', required=True)
 
 # Parse args
 args = vars(parser.parse_args())
+print(args)
 
 # Socket setup
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # create UDP socket
-sock.bind((args['ip'], args['port']))  # bind socket to server-ip, server-port
 
 if (args['mode'] == 'server'):
     # Server mode
-    server = RDT_Server(sock, args['algo'], timeout_value=10, window_size=args['window-size'])
-    server.server.server.join()
-    server.print_statistics()
+    sock.bind((args['ip'], int(args['port'])))  # bind socket to server-ip, server-port
+
+    rdt_server = RDT_Server(sock, args['algo'], timeout_value=10, window_size=int(args['window_size']))
+    rdt_server.server.server.join()
+    rdt_server.print_statistics()
 elif (args['mode'] == 'client'):
     # Client mode
-    client = RDT_Client(server_address=args['ip'], mode=args['algo'], send_fail_delay=1,
-                        max_payload_size=args['corrupt-prob'], sock=sock, timeout_value=5,
-                        window_size=args['window-size'], corrupt_probability=args['corrupt-prob'])
+    rdt_client = RDT_Client(server_address=(args['ip'], int(args['port'])), mode=args['algo'], send_fail_delay=1,
+                            max_payload_size=int(args['payload_size']), sock=sock, timeout_value=5,
+                            window_size=int(args['window_size']), corrupt_probability=int(args['corrupt_prob']))
     start_time = time.perf_counter()
-    client.send_file(args['file'])
-    client.done()
+    print(args['file'])
+    rdt_client.send_file(args['file'])
+    rdt_client.done()
     # wait for the client to finish receiving acks
-    client.client.receiver.join()
+    rdt_client.client.receiver.join()
     end_time = time.perf_counter()
-    client.client.statistics.elapsed = end_time - start_time
-    client.print_statistics()
+    rdt_client.client.statistics.elapsed = end_time - start_time
+    rdt_client.print_statistics()
 else:
     raise Exception(args['mode'] + ' is not a valid mode')
