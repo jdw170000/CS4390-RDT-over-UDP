@@ -1,4 +1,7 @@
 import os, sys
+
+from mininet.topo import Topo
+
 sys.path.insert(0, os.path.abspath(".."))
 
 from mininet.cli import CLI
@@ -9,11 +12,27 @@ from mininet.log import setLogLevel
 
 import validationTopos as vt
 
+linkOneGigNoDelayNoLoss = dict(bw=1000, delay='0ms', loss=0, max_queue_size=1000, use_htb=True)
+
+class SimpleTopo(Topo):
+    "Two hosts connected through a switch"
+
+    def build(self):
+        switch1 = self.addSwitch('s1')
+        host1 = self.addHost('h1')
+        self.addLink(host1, switch1, **linkOneGigNoDelayNoLoss)
+        # self.addLink(host1, switch1, **linkOneGigDelayLoss)
+
+        host2 = self.addHost('h2')
+        self.addLink(host2, switch1, **linkOneGigNoDelayNoLoss)
+        # self.addLink(host2, switch1, **linkOneGigDelayLoss)
+
 
 def perfTestArgs(algo, topo, payload_size, window_size, corrupt_prob, file, testname):
-    topoInstance = topo()
 
     "Create network"
+    # topoInstance = topo()
+    topoInstance = SimpleTopo()
     net = Mininet(topo=topoInstance, link=TCLink)
     net.start()
     print("Dumping host connections")
@@ -24,13 +43,23 @@ def perfTestArgs(algo, topo, payload_size, window_size, corrupt_prob, file, test
     print('c0.IP, h1.IP, h2.IP = ', c0.IP, h1.IP(), h2.IP())
 
     # debug stuff
-    print(topoInstance)
-    print(vars(topoInstance))
-    print(f'net: {net}')
-    print(vars(net))
+    # print(f'topoInstance: topoInstance')
+    # print(vars(topoInstance))
+    # print(f'net: {net}')
+    # print(vars(net))
 
-    h1.cmd(f'python3 cmd_launcher.py -m server -a {algo} -ip {h1.IP()} -p 5006 -ws {window_size} > {testname}server.out')
-    h2.cmd(f'python3 cmd_launcher.py -m client -a {algo} -ip {h1.IP()} -p 5006 -ws {window_size} -ps {payload_size} -cp {corrupt_prob} -f {file} > {testname}client.out')
+    # Test code
+    h1.cmd('python3 ../basic udp/basic-udp-server.py out.out > r.out &')
+    h2.cmd('python3 ../basic udp/basic-udp-client.py med.txt 100 5 30 > s.out &')
+
+    # h1.cmd('python3 cmd_launcher.py -m server -a GBN -ip 10.0.0.2 -p 5006 -ws 10')
+    # h2.cmd('python3 cmd_launcher.py -m client -a GBN -ip 10.0.0.1 -p 5006 -ws 10 -cp 0 -ps 100 -f \'testFile.txt\'')
+
+    # Our code
+    # h1.cmd(f'python3 cmd_launcher.py -m server -a {algo} -ip {h1.IP()} -p 5006 -ws {window_size} > {testname}server.out')
+    # h2.cmd(f'python3 cmd_launcher.py -m client -a {algo} -ip {h1.IP()} -p 5006 -ws {window_size} -ps {payload_size} -cp {corrupt_prob} -f {file} > {testname}client.out')
+    print("IP address of h1 is ", h1.IP())
+    print("IP address of h2 is ", h2.IP())
     net.stop()
 
 
