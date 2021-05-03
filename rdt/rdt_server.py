@@ -1,3 +1,6 @@
+import os, sys
+sys.path.insert(0, os.path.abspath(".."))
+
 from sr.sr_server import SR_Server
 from gbn.gbn_server import GBN_Server
 

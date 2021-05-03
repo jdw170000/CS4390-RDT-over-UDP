@@ -1,5 +1,8 @@
 import time
 
+import os, sys
+sys.path.insert(0, os.path.abspath(".."))
+
 from gbn.gbn_client import GBN_Client
 from sr.sr_client import SR_Client
 

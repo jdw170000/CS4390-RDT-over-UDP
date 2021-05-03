@@ -31,7 +31,6 @@ class GBN_Server:
         while True:
             # receive message from server and parse it
             try:
-                print('got here')
                 message_data, client_address = self.sock.recvfrom(1024)
                 checksum, sequence_number, message = rdt_headers.parse_rdt_packet(message_data)
                 # validate the checksum
