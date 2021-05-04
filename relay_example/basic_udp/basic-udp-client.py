@@ -8,9 +8,9 @@ from rdt import rdt_headers, send_packet
 
 # read the server's port number and ip from the configuration file
 config = configparser.ConfigParser()
-config.read('udp.conf')
-server_ip = config['server']['ip']
-server_port = int(config['server']['port'])
+config.read('relay.conf')
+server_ip = config['relay']['ip']
+server_port = int(config['relay']['port'])
 
 # create UDP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

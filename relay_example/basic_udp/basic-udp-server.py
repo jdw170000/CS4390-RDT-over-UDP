@@ -11,7 +11,7 @@ from rdt import rdt_headers, send_packet
 
 # read the server's port number and ip address from the configuration file
 config = configparser.ConfigParser()
-config.read('udp.conf')
+config.read('relay.conf')
 server_ip = config['server']['ip']
 server_port = int(config['server']['port'])
 
