@@ -3,10 +3,6 @@ sys.path.insert(0, os.path.abspath(".."))
 import subprocess
 
 def perfTestArgs(algo, delay, loss, payload_size, window_size, corrupt_prob, file, testname):
-
-    # Spawn relay server
-
-
     # Spawn RDT server
     # argsServer = f'python3 cmd_launcher.py -m server -a {algo} -ip 127.0.0.1 -p 5006 -ws {window_size} > r.out 2> r.err'
     # print(argsServer)
@@ -160,6 +156,9 @@ def SR_loss():
 
 
 if __name__ == '__main__':
+    # Spawn relay server
+    # TODO: this
+
     # run tests
     print('GBN_basic')
     GBN_basic()
