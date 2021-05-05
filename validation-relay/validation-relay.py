@@ -55,7 +55,7 @@ def SR_basic():
     delay = 0
     loss = 0
     window_size = 10
-    corrupt_prob = 10
+    corrupt_prob = 0.1
     file = '500K.txt'
     perfTestArgs('SR', delay, loss, payload_size, window_size, corrupt_prob, file, 'SRBasic')
 
@@ -93,8 +93,8 @@ def SR_window():
 def GBN_payload():
     delay = 5
     loss = 10
-    window_size = 0
-    corrupt_prob = 10
+    window_size = 10
+    corrupt_prob = 0.1
     file = '500K.txt'
 
     payload_size = 25
@@ -108,8 +108,8 @@ def GBN_payload():
 def SR_payload():
     delay = 5
     loss = 10
-    window_size = 0
-    corrupt_prob = 10
+    window_size = 10
+    corrupt_prob = 0.1
     file = '500K.txt'
 
     payload_size = 25
@@ -124,8 +124,8 @@ def GBN_delay():
     payload_size = 100
     delay = 0
     loss = 10
-    window_size = 0
-    corrupt_prob = 10
+    window_size = 10
+    corrupt_prob = 0.1
     file = '500K.txt'
 
     perfTestArgs('GBN', delay, loss, payload_size, window_size, corrupt_prob, file, 'GBNDelay1')
@@ -139,8 +139,8 @@ def SR_delay():
     payload_size = 100
     delay = 0
     loss = 10
-    window_size = 0
-    corrupt_prob = 10
+    window_size = 10
+    corrupt_prob = 0.1
     file = '500K.txt'
 
     perfTestArgs('SR', delay, loss, payload_size, window_size, corrupt_prob, file, 'SRDelay1')
@@ -154,8 +154,8 @@ def GBN_loss():
     payload_size = 100
     delay = 5
     loss = 5
-    window_size = 0
-    corrupt_prob = 10
+    window_size = 10
+    corrupt_prob = 0.1
     file = '500K.txt'
 
     perfTestArgs('GBN', delay, loss, payload_size, window_size, corrupt_prob, file, 'GBNLoss1')
@@ -169,8 +169,8 @@ def SR_loss():
     payload_size = 100
     delay = 5
     loss = 5
-    window_size = 0
-    corrupt_prob = 10
+    window_size = 10
+    corrupt_prob = 0.1
     file = '500K.txt'
 
     perfTestArgs('SR', delay, loss, payload_size, window_size, corrupt_prob, file, 'SRLoss1')
@@ -187,7 +187,7 @@ if __name__ == '__main__':
     # run tests
     print('GBN_basic')
     GBN_basic()
-    '''print('SR_basic')
+    print('SR_basic')
     SR_basic()
     print('GBN_window')
     GBN_window()
@@ -204,4 +204,4 @@ if __name__ == '__main__':
     print('GBN_loss')
     GBN_loss()
     print('SR_loss')
-    SR_loss()'''
+    SR_loss()
