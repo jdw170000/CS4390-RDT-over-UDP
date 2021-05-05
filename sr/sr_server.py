@@ -62,26 +62,29 @@ class SR_Server:
                 # validate the checksum
                 is_valid = rdt_headers.is_valid_checksum(checksum, sequence_number, message)
 
-                # if the packet is valid and in the window, process it
-                if is_valid and sequence_number in [s % self.sequence_number_count for s in
-                                                    range(self.window_base, self.window_base + self.window_size)]:
+                # if the packet is valid, ack it
+                if is_valid and sequence_number in [s % self.sequence_number_count for s in range(self.window_base - self.window_size, self.window_base + self.window_size)]:
                     # send the ack and attempt to deliver the packet
                     ack = GBN_PacketDescriptor('ACK', sequence_number)
                     print(f'Sending ACK ({ack.sequence_number})')
                     send_packet.send_message(self.sock, client_address, ack.sequence_number, ack.message)
 
-                    packet = GBN_PacketDescriptor(message, sequence_number)
+                    #if the packet is in the window and not already buffered, process it
+                    if sequence_number in [s % self.sequence_number_count for s in range(self.window_base, self.window_base + self.window_size)] and sequence_number not in [p.sequence_number for p in self.delivery_buffer]:
+                        packet = GBN_PacketDescriptor(message, sequence_number)
 
-                    # if the packet is in order, deliver it and attempt to deliver more, otherwise buffer it
-                    if (packet.sequence_number == self.window_base):
-                        self.deliver(packet)
-                        self.attempt_to_deliver_packets()
-                    else:
-                        self.buffer_packet(packet)
+                        # if the packet is in order, deliver it and attempt to deliver more, otherwise buffer it
+                        if (packet.sequence_number == self.window_base):
+                            self.deliver(packet)
+                            self.attempt_to_deliver_packets()
+                        else:
+                            print(f'buffering packet {packet.sequence_number}; buffer before: {str([p.sequence_number for p in self.delivery_buffer])}')
+                            self.buffer_packet(packet)
+                            print(f'buffering packet {packet.sequence_number}; buffer after: {str([p.sequence_number for p in self.delivery_buffer])}')
 
-                    if message == b'DONE':
-                        print('DONE received')
-                        self.sock.settimeout(self.server_timeout)
+                        if message == b'DONE':
+                            print('DONE received')
+                            self.sock.settimeout(self.server_timeout)
                 else:
                     if not is_valid:
                         self.statistics.numErrors += 1

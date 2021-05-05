@@ -113,29 +113,34 @@ class GBN_Client:
         # repeat until we have received ack for all messages and the client is done sending messages
         while self.unacked_list or not self.done:
             # receive message from server and parse it
-            message_data, server_address = self.sock.recvfrom(1024)
-            checksum, sequence_number, message = rdt_headers.parse_rdt_packet(message_data)
-            # validate the checksum
-            is_valid = rdt_headers.is_valid_checksum(checksum, sequence_number, message)
-            # if the ACK is valid, process it
-            if is_valid:
-                self.internal_lock.acquire()
+            try:
+                self.sock.settimeout(self.timeout_delay)
+                message_data, server_address = self.sock.recvfrom(1024)
+                checksum, sequence_number, message = rdt_headers.parse_rdt_packet(message_data)
+                # validate the checksum
+                is_valid = rdt_headers.is_valid_checksum(checksum, sequence_number, message)
+                # if the ACK is valid, process it
+                if is_valid:
+                    self.internal_lock.acquire()
 
-                # shift the window to the acked sequence number, removing acked packets from the unacked list
-                if(any([x.sequence_number == sequence_number for x in self.unacked_list])):
-                    shift_amount = (sequence_number + 1 - self.window_base) % self.sequence_number_count
-                    print(f'Unacked list before shift: {", ".join([str(x.sequence_number) for x in self.unacked_list])}; window_base = {self.window_base}')
-                    self.unacked_list = self.unacked_list[shift_amount:]
-                    self.window_base = (sequence_number + 1) % self.sequence_number_count
-                    print(f'Unacked list after shift: {", ".join([str(x.sequence_number) for x in self.unacked_list])}; window_base = {self.window_base}')
+                    # shift the window to the acked sequence number, removing acked packets from the unacked list
+                    if(any([x.sequence_number == sequence_number for x in self.unacked_list])):
+                        shift_amount = (sequence_number + 1 - self.window_base) % self.sequence_number_count
+                        print(f'Unacked list before shift: {", ".join([str(x.sequence_number) for x in self.unacked_list])}; window_base = {self.window_base}')
+                        self.unacked_list = self.unacked_list[shift_amount:]
+                        self.window_base = (sequence_number + 1) % self.sequence_number_count
+                        print(f'Unacked list after shift: {", ".join([str(x.sequence_number) for x in self.unacked_list])}; window_base = {self.window_base}')
 
-                    print(f'Received ACK({sequence_number}), window_base set to {self.window_base}')
+                        print(f'Received ACK({sequence_number}), window_base set to {self.window_base}')
+                        
+                        # if we have no more unacked packets, stop the timer
+                        # otherwise, start the timer
+                        if self.window_base == self.next_sequence_number:
+                            self.stop_timer()
+                        else:
+                            self.start_timer()
                     
-                    # if we have no more unacked packets, stop the timer
-                    # otherwise, start the timer
-                    if self.window_base == self.next_sequence_number:
-                        self.stop_timer()
-                    else:
-                        self.start_timer()
-
-            self.internal_lock.release()
+                    self.internal_lock.release()
+            except:
+                print("Timed out waiting for reply from server")
+            

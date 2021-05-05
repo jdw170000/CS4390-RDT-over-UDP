@@ -127,21 +127,26 @@ class SR_Client:
         # repeat until we have received ack for all messages and the client is done sending messages
         while self.undelivered_list or not self.done:
             # receive message from server and parse it
-            message_data, server_address = self.sock.recvfrom(1024)
-            checksum, sequence_number, message = rdt_headers.parse_rdt_packet(message_data)
-            # validate the checksum
-            is_valid = rdt_headers.is_valid_checksum(checksum, sequence_number, message)
-            # if the ACK is valid, process it
-            if is_valid:
-                self.internal_lock.acquire()
+            try:
+                self.sock.settimeout(self.timeout_delay)
+                message_data, server_address = self.sock.recvfrom(1024)
+                checksum, sequence_number, message = rdt_headers.parse_rdt_packet(message_data)
+                # validate the checksum
+                is_valid = rdt_headers.is_valid_checksum(checksum, sequence_number, message)
+                # if the ACK is valid and in the window, process it
+                if is_valid and sequence_number in [s % self.sequence_number_count for s in range(self.window_base, self.window_base + self.window_size)]:
+                    self.internal_lock.acquire()
 
-                try:
-                    # shift the window to the acked sequence number, removing acked packets from the unacked list
-                    acked_packet = next(p for p in self.undelivered_list if p.sequence_number == sequence_number)
-                    self.mark_as_acked(acked_packet)
+                    try:
+                        # shift the window to the acked sequence number, removing acked packets from the unacked list
+                        acked_packet = next(p for p in self.undelivered_list if p.sequence_number == sequence_number)
+                        self.mark_as_acked(acked_packet)
 
-                    print(f'Received ACK({sequence_number}), packet marked as acked')
-                except StopIteration:
-                    print(f'Received ACK({sequence_number}), but that packet was not found in the undelivered list')
+                        print(f'Received ACK({sequence_number}), packet marked as acked')
+                    except StopIteration:
+                        print(f'Received ACK({sequence_number}), but that packet was not found in the undelivered list')
+                    
+                    self.internal_lock.release()
+            except:
+                print("Timed out waiting for reply from server")
 
-            self.internal_lock.release()
