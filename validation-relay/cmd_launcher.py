@@ -23,8 +23,6 @@ parser.add_argument('-a', '--algo', required=True)  # GBN or SR
 parser.add_argument('-ip', '--ip', required=True)
 parser.add_argument('-p', '--port', required=True)
 
-parser.add_argument('-d' , '--delay', required=True)
-
 # Parse args
 args = vars(parser.parse_args())
 print(args)
