@@ -63,7 +63,8 @@ class GBN_Client:
 
         print('Retransmitting unacked packets')
         for packet in self.unacked_list:
-            send_packet.send_message(self.sock, self.server_address, packet.sequence_number, packet.message)
+            corrupted = send_packet.send_message(self.sock, self.server_address, packet.sequence_number, packet.message)
+            print(f'Retransmitting packet {packet.sequence_number} (corrputed? {corrupted})...')
 
         self.internal_lock.release()
 
@@ -121,17 +122,20 @@ class GBN_Client:
                 self.internal_lock.acquire()
 
                 # shift the window to the acked sequence number, removing acked packets from the unacked list
-                shift_amount = (sequence_number + 1 - self.window_base) % self.sequence_number_count
-                self.unacked_list = self.unacked_list[shift_amount:]
-                self.window_base = (sequence_number + 1) % self.sequence_number_count
+                if(any([x.sequence_number == sequence_number for x in self.unacked_list])):
+                    shift_amount = (sequence_number + 1 - self.window_base) % self.sequence_number_count
+                    print(f'Unacked list before shift: {", ".join([str(x.sequence_number) for x in self.unacked_list])}; window_base = {self.window_base}')
+                    self.unacked_list = self.unacked_list[shift_amount:]
+                    self.window_base = (sequence_number + 1) % self.sequence_number_count
+                    print(f'Unacked list after shift: {", ".join([str(x.sequence_number) for x in self.unacked_list])}; window_base = {self.window_base}')
 
-                print(f'Received ACK({sequence_number}), window_base set to {self.window_base}')
-
-                # if we have no more unacked packets, stop the timer
-                # otherwise, start the timer
-                if self.window_base == self.next_sequence_number:
-                    self.stop_timer()
-                else:
-                    self.start_timer()
+                    print(f'Received ACK({sequence_number}), window_base set to {self.window_base}')
+                    
+                    # if we have no more unacked packets, stop the timer
+                    # otherwise, start the timer
+                    if self.window_base == self.next_sequence_number:
+                        self.stop_timer()
+                    else:
+                        self.start_timer()
 
             self.internal_lock.release()

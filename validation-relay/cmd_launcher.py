@@ -35,13 +35,13 @@ if (args['mode'] == 'server'):
     print(f'Attempting to bind to {args["ip"]}:{args["port"]}')
     sock.bind((args['ip'], int(args['port'])))  # bind socket to server-ip, server-port
 
-    rdt_server = RDT_Server(sock, args['algo'], timeout_value=1, window_size=int(args['window_size']))
+    rdt_server = RDT_Server(sock, args['algo'], timeout_value=0.1, window_size=int(args['window_size']))
     rdt_server.server.server.join()
     rdt_server.print_statistics()
 elif (args['mode'] == 'client'):
     # Client mode
-    rdt_client = RDT_Client(server_address=(args['ip'], int(args['port'])), mode=args['algo'], send_fail_delay=1,
-                            max_payload_size=int(args['payload_size']), sock=sock, timeout_value=1,
+    rdt_client = RDT_Client(server_address=(args['ip'], int(args['port'])), mode=args['algo'], send_fail_delay=0.2,
+                            max_payload_size=int(args['payload_size']), sock=sock, timeout_value=0.1,
                             window_size=int(args['window_size']), corrupt_probability=float(args['corrupt_prob']))
     start_time = time.perf_counter()
     rdt_client.send_file(args['file'][1:-1])

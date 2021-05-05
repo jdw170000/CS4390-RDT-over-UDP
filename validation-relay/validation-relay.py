@@ -11,7 +11,7 @@ def perfTestArgs(algo, delay, loss, payload_size, window_size, corrupt_prob, fil
     client_err = open(f'{testname}-client.err', 'wb')
 
     # Spawn relay server
-    relay_process = subprocess.Popen(['python3', 'relay.py', '-d', f'{delay}', '-l', f'{loss}'], stdout = server_out, stderr = server_err)
+    relay_process = subprocess.Popen(['python3', 'relay.py', '-d', f'{delay}', '-l', f'{loss}'], stdout = subprocess.DEVNULL)
     print('Started relay process')
 
     # Spawn RDT server
@@ -39,7 +39,6 @@ def perfTestArgs(algo, delay, loss, payload_size, window_size, corrupt_prob, fil
     server_err.close()
     client_out.close()
     client_err.close()
-
 
 def GBN_basic():
     payload_size = 100

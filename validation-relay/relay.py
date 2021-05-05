@@ -14,12 +14,13 @@ parser.add_argument('-l', '--loss', required=True)
 args = vars(parser.parse_args())
 
 def forward(sock, packet, destination_address, drop_rate=0.0, delay=0.0):
-    # delay for the specified number of seconds
-    sleep(delay)
-    # drop packets with probability drop_rate
+    # delay for the specified number of seconds (twice: once for incoming link, once for outgoing link)
+    sleep(2*delay)
+    # drop packets with probability drop_rate (twice: once for incoming link, once for outgoing link)
     if drop_rate < random.random():
-        # forward the packet
-        sock.sendto(bytes(packet), destination_address)
+        if drop_rate < random.random():
+            # forward the packet
+            sock.sendto(bytes(packet), destination_address)
 
 
 # begin listening for packets to forward
@@ -57,4 +58,4 @@ if __name__ == "__main__":
     print(args)
     server_address = ('127.0.0.1', 5006)
     listener_address = ('127.0.0.1', 5007)
-    begin(listener_address=listener_address, server_address=server_address, drop_rate=int(args['loss'])/100, delay=int(args['delay']))
+    begin(listener_address=listener_address, server_address=server_address, drop_rate=int(args['loss'])/100, delay=float(args['delay']))
