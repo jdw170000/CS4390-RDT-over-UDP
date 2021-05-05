@@ -19,7 +19,7 @@ def perfTestArgs(algo, delay, loss, payload_size, window_size, corrupt_prob, fil
     print('Started server process')
 
     # Spawn RDT client
-    client_process = subprocess.Popen(['python3', 'cmd_launcher.py', '-m', 'client', '-a', f'{algo}', '-ip', '127.0.0.1', '-p', '5006', '-ws', f'{window_size}', '-ps', f'{payload_size}', '-cp', f'{corrupt_prob}', '-f', f'\'{file}\''], stdout = client_out, stderr = client_err)
+    client_process = subprocess.Popen(['python3', 'cmd_launcher.py', '-m', 'client', '-a', f'{algo}', '-ip', '127.0.0.1', '-p', '5007', '-ws', f'{window_size}', '-ps', f'{payload_size}', '-cp', f'{corrupt_prob}', '-f', f'\'{file}\''], stdout = client_out, stderr = client_err)
     print('Started client process')
 
     # wait for server to terminate

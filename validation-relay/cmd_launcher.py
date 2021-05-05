@@ -41,7 +41,7 @@ if (args['mode'] == 'server'):
 elif (args['mode'] == 'client'):
     # Client mode
     rdt_client = RDT_Client(server_address=(args['ip'], int(args['port'])), mode=args['algo'], send_fail_delay=1,
-                            max_payload_size=int(args['payload_size']), sock=sock, timeout_value=5,
+                            max_payload_size=int(args['payload_size']), sock=sock, timeout_value=1,
                             window_size=int(args['window_size']), corrupt_probability=float(args['corrupt_prob']))
     start_time = time.perf_counter()
     rdt_client.send_file(args['file'][1:-1])
