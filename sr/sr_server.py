@@ -47,7 +47,7 @@ class SR_Server:
     def buffer_packet(self, packet):
         # insert the packet in sorted order by sequence number to the buffer list
         for index, buffered_packet in enumerate(self.delivery_buffer):
-            if buffered_packet.sequence_number > packet.sequence_number:
+            if (buffered_packet.sequence_number - self.window_base) % self.sequence_number_count > (packet.sequence_number - self.window_base) % self.sequence_number_count:
                 self.delivery_buffer.insert(index, packet)
                 return
         # if this packet is the greatest element in the list, append it instead
