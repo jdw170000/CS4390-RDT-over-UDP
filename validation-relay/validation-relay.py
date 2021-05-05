@@ -10,18 +10,15 @@ def perfTestArgs(algo, delay, loss, payload_size, window_size, corrupt_prob, fil
     client_out = open(f'{testname}-client.out', 'wb')
     client_err = open(f'{testname}-client.err', 'wb')
 
+    # Spawn relay server
+    relay_process = subprocess.Popen(['python3', 'cmd_launcher.py', '-d', f'{delay}', '-l', f'{loss}'], stdout = server_out, stderr = server_err)
+    print('Started relay process')
+
     # Spawn RDT server
-    # argsServer = f'python3 cmd_launcher.py -m server -a {algo} -ip 127.0.0.1 -p 5006 -ws {window_size} > r.out 2> r.err'
-    # print(argsServer)
-    # subprocess.run(['python3', 'cmd_launcher.py', '-m server', f'-a {algo}', '-ip 127.0.0.1', '-p 5006', f'-ws {window_size}'])
-    # subprocess.run(['python3', 'cmd_launcher.py', '-m', 'server', '-a', f'{algo}', '-ip', '127.0.0.1', '-p', '5006', '-ws', f'{window_size}'])
     server_process = subprocess.Popen(['python3', 'cmd_launcher.py', '-m', 'server', '-a', f'{algo}', '-ip', '127.0.0.1', '-p', '5006', '-ws', f'{window_size}'], stdout = server_out, stderr = server_err)
     print('Started server process')
 
     # Spawn RDT client
-    # argsClient = f'python3 cmd_launcher.py -m client -a {algo} -ip 127.0.0.1 -p 5006 -ws {window_size} -ps {payload_size} -cp {corrupt_prob} -f \'{file}\' > s.out 2> s.err'
-    # print(argsClient)
-    # subprocess.run(['python3', 'cmd_launcher.py', '-m', 'client', '-a', f'{algo}', '-ip', '127.0.0.1', '-p', '5006', '-ws', f'{window_size}', '-ps', f'{payload_size}', '-cp', f'{corrupt_prob}' '-f', f'\'{file}\''])
     client_process = subprocess.Popen(['python3', 'cmd_launcher.py', '-m', 'client', '-a', f'{algo}', '-ip', '127.0.0.1', '-p', '5006', '-ws', f'{window_size}', '-ps', f'{payload_size}', '-cp', f'{corrupt_prob}', '-f', f'\'{file}\''], stdout = client_out, stderr = client_err)
     print('Started client process')
 
@@ -32,6 +29,9 @@ def perfTestArgs(algo, delay, loss, payload_size, window_size, corrupt_prob, fil
     # wait for client to terminate 
     client_process.wait()
     print('Client process complete')
+
+    # terminate relay server
+    relay_process.terminate()
 
     # close log files
     server_out.close()
