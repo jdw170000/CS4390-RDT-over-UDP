@@ -1,8 +1,17 @@
 import socket
 from threading import Thread
 import random
+import argparse
 from time import sleep
 
+parser = argparse.ArgumentParser()
+
+# Add args
+parser.add_argument('-d', '--delay', required=True)
+parser.add_argument('-l', '--loss', required=True)
+
+# Parse args
+args = vars(parser.parse_args())
 
 def forward(sock, packet, destination_address, drop_rate=0.0, delay=0.0):
     # delay for the specified number of seconds
@@ -45,6 +54,7 @@ def begin(listener_address, server_address, drop_rate=0.0, delay=0.0):
 
 # example to run it with some hardcoded parameters
 if __name__ == "__main__":
+    print(args)
     server_address = ('127.0.0.1', 5006)
     listener_address = ('127.0.0.1', 5007)
-    begin(listener_address=listener_address, server_address=server_address, drop_rate=0.0, delay=0.5)
+    begin(listener_address=listener_address, server_address=server_address, drop_rate=int(args['loss'])/100, delay=int(args['delay']))
