@@ -23,6 +23,8 @@ parser.add_argument('-a', '--algo', required=True)  # GBN or SR
 parser.add_argument('-ip', '--ip', required=True)
 parser.add_argument('-p', '--port', required=True)
 
+parser.add_argument('-d' , '--delay', required=True)
+
 # Parse args
 args = vars(parser.parse_args())
 print(args)
@@ -35,7 +37,7 @@ if (args['mode'] == 'server'):
     print(f'Attempting to bind to {args["ip"]}:{args["port"]}')
     sock.bind((args['ip'], int(args['port'])))  # bind socket to server-ip, server-port
 
-    rdt_server = RDT_Server(sock, args['algo'], timeout_value=10, window_size=int(args['window_size']))
+    rdt_server = RDT_Server(sock, args['algo'], timeout_value=1, window_size=int(args['window_size']))
     rdt_server.server.server.join()
     rdt_server.print_statistics()
 elif (args['mode'] == 'client'):

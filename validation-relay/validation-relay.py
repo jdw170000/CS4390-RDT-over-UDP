@@ -11,7 +11,7 @@ def perfTestArgs(algo, delay, loss, payload_size, window_size, corrupt_prob, fil
     client_err = open(f'{testname}-client.err', 'wb')
 
     # Spawn relay server
-    relay_process = subprocess.Popen(['python3', 'cmd_launcher.py', '-d', f'{delay}', '-l', f'{loss}'], stdout = server_out, stderr = server_err)
+    relay_process = subprocess.Popen(['python3', 'relay.py', '-d', f'{delay}', '-l', f'{loss}'], stdout = server_out, stderr = server_err)
     print('Started relay process')
 
     # Spawn RDT server
@@ -32,6 +32,7 @@ def perfTestArgs(algo, delay, loss, payload_size, window_size, corrupt_prob, fil
 
     # terminate relay server
     relay_process.terminate()
+    print('Closed relay process')
 
     # close log files
     server_out.close()
@@ -46,7 +47,7 @@ def GBN_basic():
     loss = 0
     window_size = 10
     corrupt_prob = 0.1
-    file = 'testFile.txt'
+    file = '500k.txt'
     perfTestArgs('GBN', delay, loss, payload_size, window_size, corrupt_prob, file, 'GBNBasic')
 
 
@@ -62,7 +63,7 @@ def SR_basic():
 
 def GBN_window():
     payload_size = 100
-    delay = 5
+    delay = 0.005
     loss = 10
     corrupt_prob = 0
     file = '500K.txt'
@@ -77,7 +78,7 @@ def GBN_window():
 
 def SR_window():
     payload_size = 100
-    delay = 5
+    delay = 0.005
     loss = 10
     corrupt_prob = 0
     file = '500K.txt'
@@ -91,7 +92,7 @@ def SR_window():
 
 
 def GBN_payload():
-    delay = 5
+    delay = 0.005
     loss = 10
     window_size = 10
     corrupt_prob = 0.1
@@ -106,7 +107,7 @@ def GBN_payload():
 
 
 def SR_payload():
-    delay = 5
+    delay = 0.005
     loss = 10
     window_size = 10
     corrupt_prob = 0.1
@@ -129,9 +130,9 @@ def GBN_delay():
     file = '500K.txt'
 
     perfTestArgs('GBN', delay, loss, payload_size, window_size, corrupt_prob, file, 'GBNDelay1')
-    delay = 5
+    delay = 0.005
     perfTestArgs('GBN', delay, loss, payload_size, window_size, corrupt_prob, file, 'GBNDelay2')
-    delay = 10
+    delay = 0.010
     perfTestArgs('GBN', delay, loss, payload_size, window_size, corrupt_prob, file, 'GBNDelay3')
 
 
@@ -144,15 +145,15 @@ def SR_delay():
     file = '500K.txt'
 
     perfTestArgs('SR', delay, loss, payload_size, window_size, corrupt_prob, file, 'SRDelay1')
-    delay = 5
+    delay = 0.005
     perfTestArgs('SR', delay, loss, payload_size, window_size, corrupt_prob, file, 'SRDelay2')
-    delay = 10
+    delay = 0.010
     perfTestArgs('SR', delay, loss, payload_size, window_size, corrupt_prob, file, 'SRDelay3')
 
 
 def GBN_loss():
     payload_size = 100
-    delay = 5
+    delay = 0.005
     loss = 5
     window_size = 10
     corrupt_prob = 0.1
@@ -167,7 +168,7 @@ def GBN_loss():
 
 def SR_loss():
     payload_size = 100
-    delay = 5
+    delay = 0.005
     loss = 5
     window_size = 10
     corrupt_prob = 0.1
@@ -181,9 +182,6 @@ def SR_loss():
 
 
 if __name__ == '__main__':
-    # Spawn relay server
-    # TODO: this
-
     # run tests
     print('GBN_basic')
     GBN_basic()
