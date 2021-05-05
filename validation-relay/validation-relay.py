@@ -3,16 +3,41 @@ sys.path.insert(0, os.path.abspath(".."))
 import subprocess
 
 def perfTestArgs(algo, delay, loss, payload_size, window_size, corrupt_prob, file, testname):
+
+    # open log files
+    server_out = open(f'{testname}-server.out', 'wb')
+    server_err = open(f'{testname}-server.err', 'wb')
+    client_out = open(f'{testname}-client.out', 'wb')
+    client_err = open(f'{testname}-client.err', 'wb')
+
     # Spawn RDT server
     # argsServer = f'python3 cmd_launcher.py -m server -a {algo} -ip 127.0.0.1 -p 5006 -ws {window_size} > r.out 2> r.err'
     # print(argsServer)
     # subprocess.run(['python3', 'cmd_launcher.py', '-m server', f'-a {algo}', '-ip 127.0.0.1', '-p 5006', f'-ws {window_size}'])
-    subprocess.run(['python3', 'cmd_launcher.py', '-m', 'server', '-a', f'{algo}', '-ip', '127.0.0.1', '-p', '5006', '-ws', f'{window_size}'])
+    # subprocess.run(['python3', 'cmd_launcher.py', '-m', 'server', '-a', f'{algo}', '-ip', '127.0.0.1', '-p', '5006', '-ws', f'{window_size}'])
+    server_process = subprocess.Popen(['python3', 'cmd_launcher.py', '-m', 'server', '-a', f'{algo}', '-ip', '127.0.0.1', '-p', '5006', '-ws', f'{window_size}'], stdout = server_out, stderr = server_err)
+    print('Started server process')
 
     # Spawn RDT client
     # argsClient = f'python3 cmd_launcher.py -m client -a {algo} -ip 127.0.0.1 -p 5006 -ws {window_size} -ps {payload_size} -cp {corrupt_prob} -f \'{file}\' > s.out 2> s.err'
     # print(argsClient)
-    subprocess.run(['python3', 'cmd_launcher.py', '-m', 'client', '-a', f'{algo}', '-ip', '127.0.0.1', '-p', '5006', '-ws', f'{window_size}', '-ps', f'{payload_size}', '-cp', f'{corrupt_prob}' '-f', f'\'{file}\''])
+    # subprocess.run(['python3', 'cmd_launcher.py', '-m', 'client', '-a', f'{algo}', '-ip', '127.0.0.1', '-p', '5006', '-ws', f'{window_size}', '-ps', f'{payload_size}', '-cp', f'{corrupt_prob}' '-f', f'\'{file}\''])
+    client_process = subprocess.Popen(['python3', 'cmd_launcher.py', '-m', 'client', '-a', f'{algo}', '-ip', '127.0.0.1', '-p', '5006', '-ws', f'{window_size}', '-ps', f'{payload_size}', '-cp', f'{corrupt_prob}', '-f', f'\'{file}\''], stdout = client_out, stderr = client_err)
+    print('Started client process')
+
+    # wait for server to terminate
+    server_process.wait()
+    print('Server process complete')
+
+    # wait for client to terminate 
+    client_process.wait()
+    print('Client process complete')
+
+    # close log files
+    server_out.close()
+    server_err.close()
+    client_out.close()
+    client_err.close()
 
 
 def GBN_basic():
@@ -20,7 +45,7 @@ def GBN_basic():
     delay = 0
     loss = 0
     window_size = 10
-    corrupt_prob = 10
+    corrupt_prob = 0.1
     file = 'testFile.txt'
     perfTestArgs('GBN', delay, loss, payload_size, window_size, corrupt_prob, file, 'GBNBasic')
 
@@ -162,7 +187,7 @@ if __name__ == '__main__':
     # run tests
     print('GBN_basic')
     GBN_basic()
-    print('SR_basic')
+    '''print('SR_basic')
     SR_basic()
     print('GBN_window')
     GBN_window()
@@ -179,4 +204,4 @@ if __name__ == '__main__':
     print('GBN_loss')
     GBN_loss()
     print('SR_loss')
-    SR_loss()
+    SR_loss()'''
