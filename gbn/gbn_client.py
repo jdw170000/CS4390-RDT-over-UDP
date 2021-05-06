@@ -152,5 +152,6 @@ class GBN_Client:
                     timeout_count += 1
                 print(f'Timed out waiting for reply from server; timeout_count = {timeout_count}')
                 if self.done and timeout_count > 10:
+                    self.timer.cancel()
                     return
             
