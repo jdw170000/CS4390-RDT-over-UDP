@@ -110,12 +110,16 @@ class GBN_Client:
             self.send(m)
 
     def receiver_thread(self):
+        # count consecutive timeouts
+        timeout_count = 0
+
         # repeat until we have received ack for all messages and the client is done sending messages
         while self.unacked_list or not self.done:
             # receive message from server and parse it
             try:
                 self.sock.settimeout(self.timeout_delay)
                 message_data, server_address = self.sock.recvfrom(1024)
+                timeout_count = 0
                 checksum, sequence_number, message = rdt_headers.parse_rdt_packet(message_data)
                 # validate the checksum
                 is_valid = rdt_headers.is_valid_checksum(checksum, sequence_number, message)
@@ -142,5 +146,9 @@ class GBN_Client:
                     
                     self.internal_lock.release()
             except:
+                if self.unacked_list:
+                    timeout_count += 1
                 print("Timed out waiting for reply from server")
+                if self.done and timeout_count > 10:
+                    return
             
