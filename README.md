@@ -1,47 +1,51 @@
 # CS4390-RDT-over-UDP
+
+### Summary:
 This project aims to implement the Go Back N and Selective Repeat formulations of reliable data transfer over UDP.
 
-This project runs on python 3.9+ and requires the following packages: configparser, socket, struct
+### Requirements:
+This project runs on python 3.9+ and requires the following packages: configparser, socket, recordclass
 
-To use rdt_client and rdt_server, you will need to create an rdt.conf file in the directory from which you are running them.
+### How to run:
+To run the tests, cd into `./validation-relay/` and run `python3 validation-relay.py`,
+this will run all tests by setting up a relay server which will emulate the delay and loss of a network.
+In order to run a specific test, comment out all non-relevant tests in the `__main__` of validation-relay.py.
 
-See the run_rdt_client_example.py and run_rdt_server_example.py for examples on how to use these scripts.
-
-This file should look like the following:
-
-\[server\]
-
-ip = \<server id address\>
-
-port = \<server port\>
-
-timeout = \<server timeout\>
-
-
-\[client\]
-
-port = \<client port\>
-
-send_fail_delay = \<time to wait after failing to send a message\>
-
-max_payload_size = \<maximum payload size\>
-
-corrupt_probability = \<probability to artificially corrupt a file\>
-
-
-\[global\]
-
-mode = \<SR for selective repeat, or GBN for go back N\>
-
-window_size = \<window size\>
-
-
-## Running on mininet
-1. Ensure you have the following files in your mininet VM
-    * rdt_udp_topo.py
-    * basic-udp-server.py
-    * basic-udp-client.py
-    * udp.conf
-2. Determine what the IP of h1 is (ex. 10.0.0.1) and set the server ip in udp.conf accordingly
-3. Run `sudo python3 rdt_udp_topo.py` from within the VM directory containing the files.
-4. The outputs of basic-udp-server.py and basic-udp-client.py will be in r.out and s.out respectively.
+### Project structure:
+```
+.
+|-- gbn # our GBN implimentation
+|   |-- gbn_client.py # our GBN client class
+|   |-- gbn_server.py # our GBN server class
+|   `-- __init__.py
+|-- rdt # our RDT implimentation
+|   |-- __init__.py
+|   |-- myfile.txt # short test text file
+|   |-- rdt_client.py
+|   |-- rdt.conf # configuration for examples
+|   |-- rdt_headers.py
+|   |-- rdt_server.py
+|   |-- record_definitions.py
+|   |-- run_rdt_client_example.py
+|   |-- run_rdt_server_example.py
+|   `-- send_packet.py
+|-- README.md # this file
+|-- relay_example
+|   `-- basic_udp
+|       |-- basic-udp-client.py
+|       |-- basic-udp-server.py
+|       |-- rdt_udp_topo.py
+|       |-- relay.conf
+|       `-- testFile.txt # short test text file
+|-- requirements.txt
+|-- sr # our SR implimentation
+|   |-- __init__.py
+|   |-- sr_client.py # our SR client class
+|   `-- sr_server.py # our SR server class
+>-- validation-mininet # non-functional validation suite utilizing mininet, safe to ignore. use validation-relay instead
+`-- validation-relay # our validation suite using a relay server which emulates a network
+    |-- 500K.txt # file for running validation tests
+    |-- cmd_launcher.py # command line interface for launching GBN/SR servers/clients with a given configuration
+    |-- relay.py # command line interface to launch relay server 
+    `-- validation-relay.py # main validation file
+```
