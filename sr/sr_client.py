@@ -120,6 +120,7 @@ class SR_Client:
         # deliver all continuous acked packets at the bottom of the window
         while self.undelivered_list and self.undelivered_list[0].acked:
             delivered_packet = self.undelivered_list.pop(0)
+            delivered_packet.timer.cancel()
             print(f'Packet {delivered_packet.sequence_number} has been delivered')
             self.window_base = (delivered_packet.sequence_number + 1) % self.sequence_number_count
 
@@ -156,5 +157,6 @@ class SR_Client:
                     timeout_count += 1
                 print("Timed out waiting for reply from server")
                 if self.done and timeout_count > 10:
+                    for p in self.undelivered_list: p.timer.cancel()
                     return
 

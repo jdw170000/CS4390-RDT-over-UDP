@@ -185,12 +185,12 @@ if __name__ == '__main__':
     '''print('GBN_basic')
     GBN_basic()
     print('SR_basic')
-    SR_basic()'''
+    SR_basic()
     print('GBN_window')
-    GBN_window()
-    '''print('SR_window')
+    GBN_window()'''
+    print('SR_window')
     SR_window()
-    print('GBN_payload')
+    '''print('GBN_payload')
     GBN_payload()
     print('SR_payload')
     SR_payload()
