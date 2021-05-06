@@ -97,10 +97,10 @@ def GBN_payload():
     corrupt_prob = 0.1
     file = '500K.txt'
 
-    payload_size = 25
+    '''payload_size = 25
     perfTestArgs('GBN', delay, loss, payload_size, window_size, corrupt_prob, file, 'GBNPayload1')
     payload_size = 50
-    perfTestArgs('GBN', delay, loss, payload_size, window_size, corrupt_prob, file, 'GBNPayload2')
+    perfTestArgs('GBN', delay, loss, payload_size, window_size, corrupt_prob, file, 'GBNPayload2')'''
     payload_size = 100
     perfTestArgs('GBN', delay, loss, payload_size, window_size, corrupt_prob, file, 'GBNPayload3')
 
