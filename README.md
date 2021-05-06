@@ -11,6 +11,8 @@ To run the tests, cd into `./validation-relay/` and run `python3 validation-rela
 this will run all tests by setting up a relay server which will emulate the delay and loss of a network.
 In order to run a specific test, comment out all non-relevant tests in the `__main__` of validation-relay.py.
 
+`run_rdt_client_example.py` and `run_rdt_server_example.py` 
+
 ### Project structure:
 ```
 .
