@@ -182,13 +182,13 @@ def SR_loss():
 
 if __name__ == '__main__':
     # run tests
-    print('GBN_basic')
+    '''print('GBN_basic')
     GBN_basic()
     print('SR_basic')
-    SR_basic()
+    SR_basic()'''
     print('GBN_window')
     GBN_window()
-    print('SR_window')
+    '''print('SR_window')
     SR_window()
     print('GBN_payload')
     GBN_payload()
@@ -201,4 +201,4 @@ if __name__ == '__main__':
     print('GBN_loss')
     GBN_loss()
     print('SR_loss')
-    SR_loss()
+    SR_loss()'''

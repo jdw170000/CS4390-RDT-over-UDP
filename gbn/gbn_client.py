@@ -42,7 +42,8 @@ class GBN_Client:
         self.receiver.start()
 
     def done_sending(self):
-        self.send('DONE')
+        while not self.send('DONE'): 
+            time.sleep(0.5)
         self.done = True
 
     def start_timer(self):
@@ -148,7 +149,7 @@ class GBN_Client:
             except:
                 if self.unacked_list:
                     timeout_count += 1
-                print("Timed out waiting for reply from server")
+                print(f'Timed out waiting for reply from server; timeout_count = {timeout_count}')
                 if self.done and timeout_count > 10:
                     return
             
