@@ -46,7 +46,7 @@ def GBN_basic():
     loss = 0
     window_size = 10
     corrupt_prob = 0.1
-    file = '500k.txt'
+    file = '500K.txt'
     perfTestArgs('GBN', delay, loss, payload_size, window_size, corrupt_prob, file, 'GBNBasic')
 
 
@@ -182,7 +182,7 @@ def SR_loss():
 
 if __name__ == '__main__':
     # run tests
-    '''print('GBN_basic')
+    print('GBN_basic')
     GBN_basic()
     print('SR_basic')
     SR_basic()
@@ -201,4 +201,4 @@ if __name__ == '__main__':
     print('GBN_loss')
     GBN_loss()
     print('SR_loss')
-    SR_loss()'''
+    SR_loss()
